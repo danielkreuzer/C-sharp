@@ -1,0 +1,382 @@
+﻿<mah:MetroWindow x:Class="Wetr.Simulator.Gui.SimulatorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Wetr.Simulator.Gui"
+        xmlns:viewModel="clr-namespace:Wetr.Simulator.Gui.ViewModel"
+        xmlns:wpf="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
+        xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+        mc:Ignorable="d"
+        Icon="pictures/icons8-sun-500.png"
+        Title="Wetr.Simulator" 
+        Height="750" Width="1000"
+        MinHeight="450" MinWidth="800">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <local:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
+        <local:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+        <local:BooleanAndConverter x:Key="BooleanAndConverter"></local:BooleanAndConverter>
+
+        <Thickness x:Key="FormControlMargin" Bottom="5" />
+
+        <DataTemplate x:Key="TabHeaderTemplate">
+            <TextBlock Text="{Binding Path=TabHeader}" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="SettingsDataTemplate">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="3*" />
+                </Grid.ColumnDefinitions>
+
+                <ListBox Grid.Column="0" HorizontalAlignment="Stretch"
+                 ItemsSource="{Binding Path=Stations}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <DockPanel Width="Auto" Margin="{StaticResource FormControlMargin}">
+                                <TextBlock Text="{Binding Path=Name}" />
+
+                                <DockPanel HorizontalAlignment="Right">
+                                    <Button 
+                                        Visibility="{Binding IsInSimulation, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                                        Command="{Binding AddStationCommand}"
+                                        IsEnabled="{Binding Path=SettingsVm.IsSimulating, Converter={StaticResource InverseBooleanConverter}}"
+                                        Content="+" >
+                                        <Button.ToolTip>
+                                            <TextBlock Text="Add the station to the simulation"/>
+                                        </Button.ToolTip>
+                                    </Button>
+
+                                    <Button HorizontalAlignment="Right"
+                                        Visibility="{Binding IsInSimulation, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                        Command="{Binding RemoveStationCommand}"
+                                        IsEnabled="{Binding Path=SettingsVm.IsSimulating, Converter={StaticResource InverseBooleanConverter}}"
+                                        Content="-" >
+                                        <Button.ToolTip>
+                                            <TextBlock Text="Remove the station from the simulation"/>
+                                        </Button.ToolTip>
+                                    </Button>
+                                </DockPanel>
+
+                            </DockPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <ScrollViewer Grid.Column="1" 
+                              VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" CanContentScroll="True"
+                              Margin="5,0,0,0">
+
+                    <!-- Grid to enable scrolling -->
+                    <Grid>
+                        <StackPanel >
+
+                            <Image Source="pictures/WetrLogoColour.png" MaxHeight="200"/>
+
+                            <TextBlock Text="Simulation Settings" FontSize="24" HorizontalAlignment="Center" Margin="10" />
+
+                            <Grid Margin="{StaticResource FormControlMargin}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1*" />
+                                    <ColumnDefinition Width="3*" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="Station:" Grid.Column="0">
+                                    <TextBlock.ToolTip>
+                                        <TextBlock Text="Select a station from the added stations" />
+                                    </TextBlock.ToolTip>
+                                </TextBlock>
+                                <ComboBox Grid.Column="1" ItemsSource="{Binding Path=SelectedStations}"
+                                          SelectedItem="{Binding Path=CurrentStation}"
+                                          DisplayMemberPath="Name">
+
+                                    <ComboBox.IsEnabled>
+                                        <MultiBinding Converter="{StaticResource BooleanAndConverter}">
+                                            <Binding Path="IsSimulating" Converter="{StaticResource InverseBooleanConverter}" />
+                                            <Binding Path="CurrentLoadTestStatus"  Converter="{StaticResource InverseBooleanConverter}"/>
+                                        </MultiBinding>
+                                    </ComboBox.IsEnabled>
+
+                                </ComboBox>
+                            </Grid>
+
+                            <Grid Margin="{StaticResource FormControlMargin}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1*" />
+                                    <ColumnDefinition Width="3*" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="Begin:" Grid.Column="0"></TextBlock>
+                                <DatePicker Grid.Column="1" SelectedDate="{Binding Path=CurrentBeginDate}" 
+                                    IsEnabled="{Binding Path=IsSimulating, Converter={StaticResource InverseBooleanConverter}}"/>
+                            </Grid>
+
+                            <Grid Margin="{StaticResource FormControlMargin}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1*" />
+                                    <ColumnDefinition Width="3*" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="End:" Grid.Column="0"></TextBlock>
+                                <DatePicker Grid.Column="1" SelectedDate="{Binding Path=CurrentEndDate}" 
+                                    IsEnabled="{Binding Path=IsSimulating, Converter={StaticResource InverseBooleanConverter}}"/>
+                            </Grid>
+
+                            <Grid Margin="{StaticResource FormControlMargin}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1*" />
+                                    <ColumnDefinition Width="3*" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0" Text="Speed:">
+                                    <TextBlock.ToolTip>
+                                        <TextBlock Text="Select how fast values should be generated" />
+                                    </TextBlock.ToolTip>
+                                </TextBlock>
+                                <Grid Grid.Column="1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1*" />
+                                        <ColumnDefinition Width="9*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0" Text="{Binding ElementName=SliderSimulationSpeed, Path=Value}"/>
+                                    <Slider Grid.Column="1"  Name="SliderSimulationSpeed" 
+                                    Minimum="0.5" Maximum="10" Value="{Binding Path=CurrentSpeed}"
+                                    TickFrequency="0.5" TickPlacement="BottomRight" IsSnapToTickEnabled="True" />
+                                </Grid>
+                            </Grid>
+
+                            <Grid Margin="{StaticResource FormControlMargin}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1*" />
+                                    <ColumnDefinition Width="3*" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="Load test:" Grid.Column="0">
+                                    <TextBlock.ToolTip>
+                                        <TextBlock Text="Activate load test simulation mode. In this mode, values will be generated for all added stations"/>
+                                    </TextBlock.ToolTip>
+                                </TextBlock>
+                                <CheckBox Grid.Column="1" 
+                                          IsChecked="{Binding Path=CurrentLoadTestStatus}"
+                                          IsEnabled="{Binding Path=IsSimulating, Converter={StaticResource InverseBooleanConverter}}" />
+                            </Grid>
+
+
+                            <TextBlock  Text="Measurement Settings" FontSize="24" HorizontalAlignment="Center" Margin="10" />
+
+                            <Grid Margin="{StaticResource FormControlMargin}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1*" />
+                                    <ColumnDefinition Width="3*" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="Type:" Grid.Column="0"></TextBlock>
+                                <ComboBox Grid.Column="1" ItemsSource="{Binding Path=MeasurementTypes}"
+                                          SelectedItem="{Binding Path=CurrentMeasurementType}"
+                                          DisplayMemberPath="Name"
+                                          IsEnabled="{Binding Path=IsSimulating, Converter={StaticResource InverseBooleanConverter}}" />
+                            </Grid>
+
+                            <Grid Margin="{StaticResource FormControlMargin}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1*" />
+                                    <ColumnDefinition Width="3*" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="Interval:" Grid.Column="0">
+                                    <TextBlock.ToolTip>
+                                        <TextBlock Text="Change how often a measurement should be generated (seconds)"/>
+                                    </TextBlock.ToolTip>
+                                </TextBlock>
+                                <Grid Grid.Column="1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1*" />
+                                        <ColumnDefinition Width="9*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0" Text="{Binding ElementName=SliderSimulationInterval, Path=Value}"/>
+                                    <Slider Grid.Column="1"  Name="SliderSimulationInterval" 
+                                            Minimum="1" Maximum="60" Value="{Binding Path=CurrentInterval}"
+                                            TickFrequency="1" TickPlacement="BottomRight" IsSnapToTickEnabled="True"
+                                            IsEnabled="{Binding Path=IsSimulating, Converter={StaticResource InverseBooleanConverter}}" />
+                                </Grid>
+                            </Grid>
+
+                            <Grid Margin="{StaticResource FormControlMargin}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1*" />
+                                    <ColumnDefinition Width="3*" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="From:" Grid.Column="0">
+                                    <TextBlock.ToolTip>
+                                        <TextBlock Text="Set the minimum value of the measurement"/>
+                                    </TextBlock.ToolTip>
+                                </TextBlock>
+                                <TextBox Grid.Column="1" 
+                                         Text="{Binding Path=CurrentFromValue}"
+                                         PreviewTextInput="NumberInput_OnPreviewTextInput"
+                                         IsEnabled="{Binding Path=IsSimulating, Converter={StaticResource InverseBooleanConverter}}"/>
+                            </Grid>
+
+                            <Grid Margin="{StaticResource FormControlMargin}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1*" />
+                                    <ColumnDefinition Width="3*" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="To:" Grid.Column="0">
+                                    <TextBlock.ToolTip>
+                                        <TextBlock Text="Set the maximum value of the measurement"/>
+                                    </TextBlock.ToolTip>
+                                </TextBlock>
+                                <TextBox Grid.Column="1" 
+                                         Text="{Binding Path=CurrentToValue}"
+                                         PreviewTextInput="NumberInput_OnPreviewTextInput"
+                                         IsEnabled="{Binding Path=IsSimulating, Converter={StaticResource InverseBooleanConverter}}"/>
+                            </Grid>
+
+                            <Grid Margin="{StaticResource FormControlMargin}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1*" />
+                                    <ColumnDefinition Width="3*" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="Strategy:" Grid.Column="0">
+                                    <TextBlock.ToolTip>
+                                        <TextBlock Text="Select how values should be generated"/>
+                                    </TextBlock.ToolTip>
+                                </TextBlock>
+                                <ComboBox Grid.Column="1" ItemsSource="{Binding Path=DistributionStrategies}"
+                                          SelectedItem="{Binding Path=CurrentDistributionStrategy}"
+                                          IsEnabled="{Binding Path=IsSimulating, Converter={StaticResource InverseBooleanConverter}}" />
+                            </Grid>
+
+                            <StackPanel  Margin="{StaticResource FormControlMargin}"
+                                Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Button Content="Start Simulation"
+                                        Command="{Binding Path=StartCommand}" 
+                                        IsEnabled="{Binding Path=SimulationReady}"
+                                        Visibility="{Binding IsSimulating, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
+
+                                <Button Content="Stop Simulation"
+                                        Command="{Binding Path=StopCommand}"
+                                        Visibility="{Binding IsSimulating, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </Grid>
+
+        </DataTemplate>
+
+        <DataTemplate x:Key="StationDataTemplate">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"></RowDefinition>
+                    <RowDefinition Height="1*"></RowDefinition>
+                </Grid.RowDefinitions>
+
+                <wpf:CartesianChart Grid.Row="0" AnimationsSpeed="0:0:0.5" Hoverable="False" DataTooltip="{x:Null}">
+                    <wpf:CartesianChart.Series>
+                        <wpf:LineSeries
+                            Values="{Binding Path=ChartValues}"
+                            PointGeometry="{x:Null}" 
+                            LineSmoothness="1"
+                            StrokeThickness="5" 
+                            Stroke="#030ea1"
+                            Fill="Transparent"/>
+                    </wpf:CartesianChart.Series>
+                    <wpf:CartesianChart.AxisX>
+                        <wpf:Axis LabelFormatter="{Binding Path=DateTimeFormatter}" 
+                                  Title="Time"
+                                  MaxValue="{Binding Path=AxisMax}" 
+                                  MinValue="{Binding Path=AxisMin}"
+                                  Unit="{Binding Path=AxisUnit}">
+                            <wpf:Axis.Separator>
+                                <wpf:Separator Step="{Binding Path=AxisStep}" />
+                            </wpf:Axis.Separator>
+                        </wpf:Axis>
+                    </wpf:CartesianChart.AxisX>
+                    <wpf:CartesianChart.AxisY>
+                        <wpf:Axis Title="{Binding Path=LastMeasurementType.Name}" />
+                    </wpf:CartesianChart.AxisY>
+                </wpf:CartesianChart>
+
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="2*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid Grid.Column="0" Margin="5">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0">
+                            <TextBlock Text="{Binding Path=Station.Name, StringFormat=Name: {0}}" />
+                            <TextBlock Text="{Binding Path=Station.Latitude, StringFormat=Latitude: {0:F3}}" />
+                            <TextBlock Text="{Binding Path=Station.Longitude, StringFormat=Longitude: {0:F3}}" />
+                            <TextBlock Text="{Binding Path=Station.Community.Name, StringFormat=Community: {0}}" />
+                        </StackPanel>
+
+                        <Button Grid.Row="2"
+                            Command="{Binding Path=ClearValuesCommand}" Content="Clear Values"/>
+                    </Grid>
+
+                    <DataGrid Grid.Column="1" ItemsSource="{Binding Path=Values}" 
+                          AutoGenerateColumns="False" ColumnWidth="*">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="Type">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Path=MeasurementType}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTemplateColumn Header="Value">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Path=Value}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTemplateColumn Header="Date">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Path=Date, StringFormat='{}{0: dd-MM-yyyy HH:mm:ss}'}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+
+
+            </Grid>
+
+        </DataTemplate>
+
+        <local:TabDataTemplateSelector x:Name="TabDataTemplateSelector"
+                                       x:Key="TabDataTemplateSelector"
+                                       SettingsTemplate="{StaticResource SettingsDataTemplate}"
+                                       StationTemplate="{StaticResource StationDataTemplate}" />
+    </Window.Resources>
+
+    <Grid>
+        <TabControl 
+            ItemsSource="{Binding Path=Tabs}"
+            ItemTemplate="{StaticResource TabHeaderTemplate}"
+            ContentTemplateSelector="{StaticResource TabDataTemplateSelector}"
+            SelectedIndex="0" />
+    </Grid>
+</mah:MetroWindow>

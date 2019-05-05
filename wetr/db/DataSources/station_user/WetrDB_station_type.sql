@@ -1,0 +1,8 @@
+INSERT INTO WetrDB.station_type (id, manufacturer, model, temperature, air_pressure, rainfall, humidity, wind_speed, wind_direction) VALUES (1, 'SKEY', '1', 1, 0, 0, 0, 0, 0);
+INSERT INTO WetrDB.station_type (id, manufacturer, model, temperature, air_pressure, rainfall, humidity, wind_speed, wind_direction) VALUES (2, 'Netatmo', 'unviversal', 1, 1, 1, 1, 1, 1);
+INSERT INTO WetrDB.station_type (id, manufacturer, model, temperature, air_pressure, rainfall, humidity, wind_speed, wind_direction) VALUES (3, 'CSL', 'wirelessStation', 1, 0, 1, 1, 1, 1);
+INSERT INTO WetrDB.station_type (id, manufacturer, model, temperature, air_pressure, rainfall, humidity, wind_speed, wind_direction) VALUES (4, 'HAMA', 'ClockAndWeather', 1, 0, 0, 1, 0, 0);
+INSERT INTO WetrDB.station_type (id, manufacturer, model, temperature, air_pressure, rainfall, humidity, wind_speed, wind_direction) VALUES (5, 'froggit', 'cheap', 1, 1, 0, 1, 0, 0);
+INSERT INTO WetrDB.station_type (id, manufacturer, model, temperature, air_pressure, rainfall, humidity, wind_speed, wind_direction) VALUES (6, 'Technoline', 'premium', 1, 1, 1, 1, 1, 1);
+INSERT INTO WetrDB.station_type (id, manufacturer, model, temperature, air_pressure, rainfall, humidity, wind_speed, wind_direction) VALUES (7, 'Bresser', 'wind and temperature', 1, 1, 0, 1, 1, 1);
+INSERT INTO WetrDB.station_type (id, manufacturer, model, temperature, air_pressure, rainfall, humidity, wind_speed, wind_direction) VALUES (8, 'TFA', '4589', 1, 1, 0, 1, 1, 1);
